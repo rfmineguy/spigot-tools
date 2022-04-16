@@ -1,0 +1,12 @@
+name: SpigotHammers
+version: '${project.version}'
+main: me.rfmineguy.spigot_hammers.SpigotHammers
+api-version: 1.18
+description: A plugin implementing a mechanic similar to TConstruct's hammers and excavators
+commands:
+  hammer:
+    description: Gives the player a hammer
+    usage: /hammer <type>
+  excavator:
+    description: Gives the player an excavator
+    usage: /excavator <type>
