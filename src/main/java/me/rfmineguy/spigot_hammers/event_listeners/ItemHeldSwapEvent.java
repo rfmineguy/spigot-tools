@@ -22,7 +22,7 @@ public class ItemHeldSwapEvent implements Listener {
         Player player = event.getPlayer();
         int slot = event.getNewSlot();
         ItemStack item = player.getInventory().getItem(slot);
-        BlockFace blockFace = HelperFunctions.getBlockFace(player);
+        BlockFace blockFace = HelperFunctions.getTargetBlockFace(player);
 
         //if the player isn't looking at a block get out, we don't care anymore
         if (blockFace == null) {

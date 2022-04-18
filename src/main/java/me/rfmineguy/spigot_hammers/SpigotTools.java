@@ -2,9 +2,7 @@ package me.rfmineguy.spigot_hammers;
 
 import me.rfmineguy.spigot_hammers.commands.ExcavatorCommand;
 import me.rfmineguy.spigot_hammers.commands.HammerCommand;
-import me.rfmineguy.spigot_hammers.event_listeners.BlockBreakListener;
-import me.rfmineguy.spigot_hammers.event_listeners.ItemCraftEvent;
-import me.rfmineguy.spigot_hammers.event_listeners.JoinEvent;
+import me.rfmineguy.spigot_hammers.event_listeners.*;
 import me.rfmineguy.spigot_hammers.item.ItemManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,7 +23,8 @@ public final class SpigotTools extends JavaPlugin {
         getCommand("hammer").setExecutor(new HammerCommand());
         getCommand("excavator").setExecutor(new ExcavatorCommand());
 
-        //getServer().getPluginManager().registerEvents(new ItemHeldSwapEvent(), this);
+        //getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
+        getServer().getPluginManager().registerEvents(new ItemHeldSwapEvent(), this);
         getServer().getPluginManager().registerEvents(new ItemCraftEvent(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);

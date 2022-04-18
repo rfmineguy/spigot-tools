@@ -11,19 +11,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Random;
 
 public class BlockBreakListener implements Listener {
 
     static boolean currentlyBreaking = false;
+    Random random = new Random();
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        BlockFace blockFace = HelperFunctions.getBlockFace(player);
+        BlockFace blockFace = HelperFunctions.getTargetBlockFace(player);
         Block block = event.getBlock();
         ItemStack currentItem = player.getInventory().getItem(EquipmentSlot.HAND);
 
@@ -52,16 +56,17 @@ public class BlockBreakListener implements Listener {
                 for (int k = -zoff; k <= zoff; k++) {
                     Block b = world.getBlockAt(originx + i, originy + j, originz + k);
                     boolean isAir = b.getType() == Material.AIR;
+                    boolean isLiquid = b.getType() == Material.WATER || b.getType() == Material.LAVA;
                     boolean isPreferredTool = b.isPreferredTool(tool);
                     boolean isBlockDirtlike = HelperFunctions.isDirtlike(b);
 
                     //Hammer condition
-                    if (!isAir && !mineDirtLike && (isPreferredTool && !isBlockDirtlike)) {
+                    if (!isAir && !isLiquid && !mineDirtLike && (isPreferredTool && !isBlockDirtlike)) {
                         player.breakBlock(b);
                     }
 
                     //Excavator condition
-                    if (!isAir && mineDirtLike && isBlockDirtlike) {
+                    if (!isAir && !isLiquid && mineDirtLike && isBlockDirtlike) {
                         player.breakBlock(b);
                     }
                 }

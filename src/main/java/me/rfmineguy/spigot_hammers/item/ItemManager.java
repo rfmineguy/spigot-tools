@@ -20,16 +20,10 @@ public class ItemManager {
 
     static int totalRecipes = 0;
 
-    //public static ItemStack woodHammer;
-    //public static ItemStack goldHammer;
-
     public static ItemStack stoneHammer;
     public static ItemStack ironHammer;
     public static ItemStack diamondHammer;
     public static ItemStack netheriteHammer;
-
-    //public static ItemStack woodExcavator;
-    //public static ItemStack goldExcavator;
 
     public static ItemStack stoneExcavator;
     public static ItemStack ironExcavator;
