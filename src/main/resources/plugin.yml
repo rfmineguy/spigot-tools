@@ -10,4 +10,6 @@ commands:
   excavator:
     description: Gives the player an excavator
     usage: /excavator <type>
+  st-effect:
+    description: Options for the effect added by SpigotTools
 depend: []

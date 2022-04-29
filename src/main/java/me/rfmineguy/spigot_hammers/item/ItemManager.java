@@ -5,7 +5,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.*;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.RecipeChoice;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.SmithingRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -20,19 +23,22 @@ public class ItemManager {
 
     static int totalRecipes = 0;
 
-    public static ItemStack stoneHammer;
-    public static ItemStack ironHammer;
-    public static ItemStack diamondHammer;
-    public static ItemStack netheriteHammer;
+    //Hammers
+    public static ItemStack stoneHammer, ironHammer, diamondHammer, netheriteHammer;
 
-    public static ItemStack stoneExcavator;
-    public static ItemStack ironExcavator;
-    public static ItemStack diamondExcavator;
-    public static ItemStack netheriteExcavator;
+    //Excavators
+    public static ItemStack stoneExcavator, ironExcavator, diamondExcavator, netheriteExcavator;
 
-    public static ItemStack ironConversionKit;
-    public static ItemStack diamondConversionKit;
-    public static ItemStack netheriteConversionKit;
+    //Upgrades
+    private static final NamespacedKey speedUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "speedUpgrade"); //type byte
+    private static final NamespacedKey fortuneUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "fortuneUpgrade"); //type byte
+    private static final NamespacedKey silkTouchUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "silkTouchUpgrade"); //type byte
+
+    //Conversion Kits
+    public static ItemStack ironConversionKit, diamondConversionKit, netheriteConversionKit;
+
+    //Modifier items
+    //public static ItemStack
 
     public static void init() {
         //woodHammer          = createTool(ToolType.HAMMER, Material.WOODEN_PICKAXE, "Wood Hammer", 100000);
@@ -135,19 +141,44 @@ public class ItemManager {
         meta.setDisplayName(name);
         meta.addEnchant(Enchantment.DURABILITY, 1, false);
 
-        List<String> lore = new ArrayList<>();
-        lore.add("Mines in a 3x3 area");
-        meta.setLore(lore);
+        initializeToolUpgradeData(data);
 
         switch (type) {
-            case HAMMER: data.set(new NamespacedKey(SpigotTools.getPlugin(), "hammer"), PersistentDataType.STRING, "");
+            case HAMMER: {
+                data.set(new NamespacedKey(SpigotTools.getPlugin(), "hammer"), PersistentDataType.STRING, "");
+            }
             break;
-            case EXCAVATOR: data.set(new NamespacedKey(SpigotTools.getPlugin(), "excavator"), PersistentDataType.STRING, "");
+            case EXCAVATOR: {
+                data.set(new NamespacedKey(SpigotTools.getPlugin(), "excavator"), PersistentDataType.STRING, "");
+            }
             break;
         }
         itemStack.setItemMeta(meta);
+        updateItemStackLore(itemStack);
 
         return itemStack;
+    }
+    private static void initializeToolUpgradeData(PersistentDataContainer dataContainer) {
+        dataContainer.set(speedUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        dataContainer.set(fortuneUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        dataContainer.set(silkTouchUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+    }
+    public static void updateItemStackLore(ItemStack itemStack) {
+        ItemMeta meta = itemStack.getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        byte speedLvl = data.getOrDefault(speedUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        byte fortuneLvl = data.getOrDefault(fortuneUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        byte silkTouchLvl = data.getOrDefault(silkTouchUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        List<String> lore = new ArrayList<>();
+        lore.add("Mines in a 3x3 area");
+        lore.add("Shift+RightClick for modifiers");
+        lore.add("");
+        lore.add("Modifiers");
+        lore.add(" - Efficiency Level   " + speedLvl);
+        lore.add(" - Fortune Level      " + fortuneLvl);
+        lore.add(" - Silk Touch Level   " + silkTouchLvl);
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
     }
     public static ItemStack createConversionKit(Material material, String name, int itemMeta) {
         ItemStack itemStack = new ItemStack(material, 1);

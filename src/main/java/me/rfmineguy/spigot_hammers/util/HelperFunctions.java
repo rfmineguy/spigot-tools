@@ -10,9 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.RayTraceResult;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class HelperFunctions {
 
@@ -20,42 +18,44 @@ public class HelperFunctions {
     private static final double Y_FACE_OFFSET = 0.5;
     private static final double Z_FACE_OFFSET = 0.5;
 
-    public static BlockFace getTargetBlockFace(Player player) {
+    /**
+     * getTargetBlockFace(Player)
+     * @apiNote Calculates the blockface the player is looking at given a player
+     * @param player The player of whome you are trying to get the blockface they are looking at
+     * @return The blockface this player was looking at or null
+     */
+    public static BlockFace getTargetBlockFace(Player player, int maxDistance) {
         Location location = player.getEyeLocation();
-        RayTraceResult rayTraceResult = player.getWorld().rayTraceBlocks(location, location.getDirection(), 5, FluidCollisionMode.NEVER);
+        RayTraceResult rayTraceResult = player.getWorld().rayTraceBlocks(location, location.getDirection(), maxDistance, FluidCollisionMode.NEVER);
         return (rayTraceResult != null) ? rayTraceResult.getHitBlockFace() : null;
     }
-    public static Block getTargetBlock(Player player) {
-        Location location = player.getEyeLocation();
-        RayTraceResult rayTraceResult = player.getWorld().rayTraceBlocks(location, location.getDirection(), 6, FluidCollisionMode.NEVER);
-        return (rayTraceResult != null) ? rayTraceResult.getHitBlock() : null;
+    public static BlockFace getTargetBlockFace(Player player) {
+        return getTargetBlockFace(player, 5);
     }
 
-    /**
-        getBlockFace(Player)
 
-        @apiNote      : determines which face of the block a player is looking at (South, West, etc.)
-        @param player : the player that is looking at a block
-        @return       : The blockface being looked at
+    /**
+     * getTargetBlock(Player)
+     *
+     * @apiNote      : Calculates the current block a player is looking at
+     * @param player : The player of whome you are trying to get the block their looking at
+     * @return Block : The block that the player specified is looking at or null
      */
-    public static BlockFace getBlockFace(Player player) {
-        Set<Material> transparent = new HashSet<>();
-        transparent.add(Material.WATER);
-        transparent.add(Material.LAVA);
-        Block targetBlock = player.getTargetBlockExact(100, FluidCollisionMode.NEVER);
-        List<Block> lastTwoTargetBlocks = player.getLastTwoTargetBlocks(transparent, 100);
-        if (lastTwoTargetBlocks.size() != 2) return null;// || !lastTwoTargetBlocks.get(1).getType().isOccluding()) return null;
-        //targetBlock = lastTwoTargetBlocks.get(1);
-        Block adjacentBlock = lastTwoTargetBlocks.get(0);
-        return targetBlock.getFace(adjacentBlock);
+    public static Block getTargetBlock(Player player, int maxDistance) {
+        Location location = player.getEyeLocation();
+        RayTraceResult rayTraceResult = player.getWorld().rayTraceBlocks(location, location.getDirection(), maxDistance, FluidCollisionMode.NEVER);
+        return (rayTraceResult != null) ? rayTraceResult.getHitBlock() : null;
+    }
+    public static Block getTargetBlock(Player player) {
+        return getTargetBlock(player, 5);
     }
 
     /**
         getOffsets(BlockFace)
 
-        @apiNote : calculates what the x, y, and z offset values need to be to break the right 3x3 area
-        @param blockFace : a single block face (most commonly retrieved via HelperFunctions#getBlockFace(Player))
-        @return     : a list of offsets [0]->xoff, [1]->yoff, [2]->zoff
+        @apiNote : Calculates what the x, y, and z offset values need to be to break the right 3x3 area
+        @param blockFace : A single block face (most commonly retrieved via HelperFunctions#getTargetBlockFace(Player))
+        @return     : A list of offset values [xOff, yOff, zOff]
      */
     public static List<Integer> getOffsets(BlockFace blockFace) {
         int xoff = 0;
@@ -77,6 +77,12 @@ public class HelperFunctions {
         return Arrays.asList(xoff, yoff, zoff);
     }
 
+    /**
+     * getFaceOffsets(BlockFace)
+     * @apiNote Calculates the offsets for particle spawning given a blockface
+     * @param blockFace The blockface the offsets should be calculated for
+     * @return A list of three offset values [xOff, yOff, zOff]
+     */
     public static List<Double> getFaceOffsets(BlockFace blockFace) {
         //-0.5 and 0.5 put the coordinate at the edge of a block
         double xoff = 0.5;
@@ -122,5 +128,10 @@ public class HelperFunctions {
      */
     public static boolean isDirtlike(Block block) {
         return block.isPreferredTool(new ItemStack(Material.NETHERITE_SHOVEL));
+    }
+
+    public static boolean isBreakable(Block block) {
+        Material material = block.getType();
+        return material != Material.WATER && material != Material.LAVA && material != Material.AIR;
     }
 }

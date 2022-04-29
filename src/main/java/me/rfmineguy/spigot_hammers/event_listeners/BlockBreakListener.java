@@ -2,7 +2,6 @@ package me.rfmineguy.spigot_hammers.event_listeners;
 
 import me.rfmineguy.spigot_hammers.item.ItemManager;
 import me.rfmineguy.spigot_hammers.util.HelperFunctions;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -11,18 +10,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.Random;
 
 public class BlockBreakListener implements Listener {
 
     static boolean currentlyBreaking = false;
-    Random random = new Random();
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
@@ -31,7 +26,7 @@ public class BlockBreakListener implements Listener {
         Block block = event.getBlock();
         ItemStack currentItem = player.getInventory().getItem(EquipmentSlot.HAND);
 
-        if (blockFace != null && !player.isSneaking()) {
+        if (blockFace != null && !player.isSneaking() && !block.isPassable()) {
             if (ItemManager.isHammer(currentItem) && !currentlyBreaking) {
                 break3x3(player, blockFace, currentItem, block.getX(), block.getY(), block.getZ(), false);
             }
@@ -66,7 +61,7 @@ public class BlockBreakListener implements Listener {
                     }
 
                     //Excavator condition
-                    if (!isAir && !isLiquid && mineDirtLike && isBlockDirtlike) {
+                    else if (!isAir && !isLiquid && mineDirtLike && isBlockDirtlike) {
                         player.breakBlock(b);
                     }
                 }
