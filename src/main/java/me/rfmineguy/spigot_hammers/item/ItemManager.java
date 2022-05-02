@@ -30,16 +30,17 @@ public class ItemManager {
     public static ItemStack stoneExcavator, ironExcavator, diamondExcavator, netheriteExcavator;
 
     //Upgrades
-    private static final NamespacedKey speedUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "speedUpgrade"); //type byte
-    private static final NamespacedKey fortuneUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "fortuneUpgrade"); //type byte
-    private static final NamespacedKey silkTouchUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "silkTouchUpgrade"); //type byte
+    public static final NamespacedKey speedUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "speedUpgrade"); //type byte
+    public static final NamespacedKey fortuneUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "fortuneUpgrade"); //type byte
+    public static final NamespacedKey silkTouchUpgradeLvl = new NamespacedKey(SpigotTools.getPlugin(), "silkTouchUpgrade"); //type byte
 
     //Conversion Kits
     public static ItemStack ironConversionKit, diamondConversionKit, netheriteConversionKit;
 
     //Modifier items
-    //public static ItemStack
-
+    public static ItemStack speedUpgradeItemLvl1, speedUpgradeItemLvl2, speedUpgradeItemLvl3;
+    public static ItemStack fortuneUpgradeItemLvl1, fortuneUpgradeItemLvl2; //all upgrade items will be books
+    public static ItemStack silkTouchUpgradeItem;
     public static void init() {
         //woodHammer          = createTool(ToolType.HAMMER, Material.WOODEN_PICKAXE, "Wood Hammer", 100000);
         stoneHammer         = createTool(ToolType.HAMMER, Material.STONE_PICKAXE    , "Stone Hammer"    , 100001);
@@ -58,8 +59,18 @@ public class ItemManager {
         ironConversionKit       = createConversionKit(Material.IRON_INGOT, "Redstone Infused Iron Ingot", 100020);
         diamondConversionKit    = createConversionKit(Material.DIAMOND, "Redstone Infused Diamond", 100021);
         netheriteConversionKit  = createConversionKit(Material.NETHERITE_INGOT, "Redstone Infused Netherite Ingot", 100022);
+
+        speedUpgradeItemLvl1    = createUpgradeItem("Speed Upgrade 1", "speed", 1, 100030);  // efficiency 1
+        speedUpgradeItemLvl2    = createUpgradeItem("Speed Upgrade 2", "speed", 2, 100031);  // efficiency 2
+        speedUpgradeItemLvl3    = createUpgradeItem("Speed Upgrade 3", "speed", 3, 100032);  // efficiency 4
+
+        fortuneUpgradeItemLvl1  = createUpgradeItem("Fortune Upgrade 1", "fortune", 1, 100035);  //fortune 1
+        fortuneUpgradeItemLvl2  = createUpgradeItem("Fortune Upgrade 2", "fortune", 2, 100036);  //fortune 3
+
+        silkTouchUpgradeItem    = createUpgradeItem("Silk Touch Upgrade", "silk", 1, 100039);  //silk touch
     }
 
+    //RECIPE MANAGEMENT FUNCTIONS
     public static void initRecipes() {
 
         //Crafting table recipes
@@ -81,7 +92,6 @@ public class ItemManager {
 
         SpigotTools.LOGGER.info("Initialized recipes (" + totalRecipes + ")");
     }
-
     /*
         Recipes :
         [redstone, null, redstone],
@@ -119,7 +129,6 @@ public class ItemManager {
         Bukkit.getServer().addRecipe(smithingRecipe);
         totalRecipes ++;
     }
-
     private static void addStoneToolRecipe(Material baseTool, ItemStack result, String name) {
         ShapedRecipe recipe = new ShapedRecipe(NamespacedKey.minecraft(name), result);
         recipe.shape("x", "b", "s"); //x = ingot, b = baseTool, s = stick
@@ -129,6 +138,9 @@ public class ItemManager {
         Bukkit.getServer().addRecipe(recipe);
         totalRecipes ++;
     }
+
+
+    //ITEM CREATION FUNCTIONS
     private static ItemStack createTool(ToolType type, Material material, String name, int itemMeta) {
         ItemStack itemStack = new ItemStack(material, 1);
         ItemMeta meta = itemStack.getItemMeta();
@@ -158,28 +170,6 @@ public class ItemManager {
 
         return itemStack;
     }
-    private static void initializeToolUpgradeData(PersistentDataContainer dataContainer) {
-        dataContainer.set(speedUpgradeLvl, PersistentDataType.BYTE, (byte)0);
-        dataContainer.set(fortuneUpgradeLvl, PersistentDataType.BYTE, (byte)0);
-        dataContainer.set(silkTouchUpgradeLvl, PersistentDataType.BYTE, (byte)0);
-    }
-    public static void updateItemStackLore(ItemStack itemStack) {
-        ItemMeta meta = itemStack.getItemMeta();
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        byte speedLvl = data.getOrDefault(speedUpgradeLvl, PersistentDataType.BYTE, (byte)0);
-        byte fortuneLvl = data.getOrDefault(fortuneUpgradeLvl, PersistentDataType.BYTE, (byte)0);
-        byte silkTouchLvl = data.getOrDefault(silkTouchUpgradeLvl, PersistentDataType.BYTE, (byte)0);
-        List<String> lore = new ArrayList<>();
-        lore.add("Mines in a 3x3 area");
-        lore.add("Shift+RightClick for modifiers");
-        lore.add("");
-        lore.add("Modifiers");
-        lore.add(" - Efficiency Level   " + speedLvl);
-        lore.add(" - Fortune Level      " + fortuneLvl);
-        lore.add(" - Silk Touch Level   " + silkTouchLvl);
-        meta.setLore(lore);
-        itemStack.setItemMeta(meta);
-    }
     public static ItemStack createConversionKit(Material material, String name, int itemMeta) {
         ItemStack itemStack = new ItemStack(material, 1);
         ItemMeta meta = itemStack.getItemMeta();
@@ -198,6 +188,58 @@ public class ItemManager {
         itemStack.setItemMeta(meta);
         return itemStack;
     }
+    public static ItemStack createUpgradeItem(String name, String type, int level, int itemMeta) {
+        // create itemstack with modified 'book' Material
+        ItemStack itemStack = new ItemStack(Material.BOOK);
+        ItemMeta meta = itemStack.getItemMeta();
+        meta.setCustomModelData(itemMeta);
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+        dataContainer.set(new NamespacedKey(SpigotTools.getPlugin(), "upgradeType"), PersistentDataType.STRING, type);
+        dataContainer.set(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE, (byte)level);
+        meta.setDisplayName(name);
+
+        List<String> lore = new ArrayList<>();
+        lore.add("Upgrade : " + name);
+        lore.add("Level : " + level);
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
+        return itemStack;
+    }
+
+
+    //ITEM MANAGEMENT FUNCTIONS
+    private static void initializeToolUpgradeData(PersistentDataContainer dataContainer) {
+        dataContainer.set(speedUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        dataContainer.set(fortuneUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        dataContainer.set(silkTouchUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+    }
+    public static void makeUpgradeItemUnique(ItemStack itemStack) {
+        ItemMeta meta = itemStack.getItemMeta();
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+        int random = SpigotTools.RANDOM.nextInt();
+        dataContainer.set(new NamespacedKey(SpigotTools.getPlugin(), "uniqueId"), PersistentDataType.INTEGER, random);
+        itemStack.setItemMeta(meta);
+    }
+    public static void updateItemStackLore(ItemStack itemStack) {
+        ItemMeta meta = itemStack.getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        byte speedLvl = data.getOrDefault(speedUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        byte fortuneLvl = data.getOrDefault(fortuneUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        byte silkTouchLvl = data.getOrDefault(silkTouchUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        List<String> lore = new ArrayList<>();
+        lore.add("Mines in a 3x3 area");
+        lore.add("Shift+RightClick for modifiers");
+        lore.add("");
+        lore.add("Modifiers");
+        lore.add(" - Efficiency Level   " + speedLvl);
+        lore.add(" - Fortune Level      " + fortuneLvl);
+        lore.add(" - Silk Touch Level   " + silkTouchLvl);
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
+    }
+
+
+    //LOGIC UTILITY FUNCTIONS
     public static boolean isHammer(ItemStack itemStack) {
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null)
@@ -212,22 +254,14 @@ public class ItemManager {
         PersistentDataContainer container = meta.getPersistentDataContainer();
         return container.has(new NamespacedKey(SpigotTools.getPlugin(), "excavator"), PersistentDataType.STRING);
     }
-
-    public static boolean isConversionKit(ItemStack itemStack) {
+    public static boolean isUpgrade(ItemStack itemStack) {
+        if (itemStack == null)
+            return false;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null)
             return false;
-        PersistentDataContainer container = meta.getPersistentDataContainer();
-        return container.has(new NamespacedKey(SpigotTools.getPlugin(), "conversionkit"), PersistentDataType.STRING);
-    }
-    public static boolean isPickaxe(ItemStack itemStack) {
-        return itemStack.getType() == Material.IRON_PICKAXE ||
-                itemStack.getType() == Material.DIAMOND_PICKAXE ||
-                itemStack.getType() == Material.NETHERITE_PICKAXE;
-    }
-    public static boolean isShovel(ItemStack itemStack) {
-        return itemStack.getType() == Material.IRON_SHOVEL ||
-                itemStack.getType() == Material.DIAMOND_SHOVEL ||
-                itemStack.getType() == Material.NETHERITE_SHOVEL;
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+        return dataContainer.has(new NamespacedKey(SpigotTools.getPlugin(), "upgradeType"), PersistentDataType.STRING) &&
+                dataContainer.has(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE);
     }
 }

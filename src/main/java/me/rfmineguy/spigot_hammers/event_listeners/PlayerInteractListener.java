@@ -51,7 +51,7 @@ public class PlayerInteractListener implements Listener {
         }
         ItemStack itemStack = event.getItem();
         if (itemStack != null && (ItemManager.isHammer(itemStack) || ItemManager.isExcavator(itemStack))) {
-            ToolModifierInventory.CustomInventory inventory = new ToolModifierInventory.CustomInventory();
+            ToolModifierInventory.CustomInventory inventory = new ToolModifierInventory.CustomInventory(itemStack);
             event.getPlayer().openInventory(inventory.getInventory());
             event.setCancelled(true);
         }

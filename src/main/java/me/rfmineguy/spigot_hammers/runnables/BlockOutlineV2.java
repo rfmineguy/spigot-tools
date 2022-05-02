@@ -23,6 +23,9 @@ public class BlockOutlineV2 extends BukkitRunnable {
     @Override
     public void run() {
         Bukkit.getServer().getOnlinePlayers().forEach((Player p) -> {
+            if (p.getGameMode().equals(GameMode.SPECTATOR) || p.getGameMode().equals(GameMode.ADVENTURE)) {
+                return;
+            }
             ItemStack itemStack = p.getInventory().getItemInMainHand();
 
             //otherwise do nothing

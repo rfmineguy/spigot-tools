@@ -50,6 +50,7 @@ public class HelperFunctions {
         return getTargetBlock(player, 5);
     }
 
+
     /**
         getOffsets(BlockFace)
 
@@ -77,8 +78,10 @@ public class HelperFunctions {
         return Arrays.asList(xoff, yoff, zoff);
     }
 
+
     /**
      * getFaceOffsets(BlockFace)
+     * @deprecated No longer used in this plugin
      * @apiNote Calculates the offsets for particle spawning given a blockface
      * @param blockFace The blockface the offsets should be calculated for
      * @return A list of three offset values [xOff, yOff, zOff]
@@ -120,6 +123,8 @@ public class HelperFunctions {
         }
         return Arrays.asList(xoff, yoff, zoff);
     }
+
+
     /**
      * isDirtLike(Block)
      * @apiNote     : uses Block#isPreferredTool to determine whether the block is ideally minable by a shovel

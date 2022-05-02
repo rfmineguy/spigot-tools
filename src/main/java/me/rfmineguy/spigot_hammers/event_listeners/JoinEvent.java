@@ -19,8 +19,8 @@ public class JoinEvent implements Listener {
         player.sendMessage(ChatColor.ITALIC + "Your hammer/excavator indicator's status is currently : " + strStatus);
         player.sendMessage(ChatColor.ITALIC + "To change it use " + ChatColor.BLUE + "/st-effect effect [on/off]");
 
-        SpigotTools.LOGGER.info("Work on hosting this resource pack");
-        event.setJoinMessage(ChatColor.UNDERLINE + "SpigotTools :\n" +
+        player.sendMessage("====================================");
+        player.sendMessage(ChatColor.UNDERLINE + "SpigotTools :\n" +
                 ChatColor.AQUA + "   This server has the Spigot Tools plugin installed. " +
                 "It makes use of a custom resource pack to improve the playing experience." +
                 "A link to download it can be found here : <currently pending curseforge review>");

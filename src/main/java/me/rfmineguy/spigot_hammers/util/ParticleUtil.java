@@ -28,15 +28,8 @@ public class ParticleUtil {
     public static void drawLine(Player player, Vector v1, Vector v2) {
         drawLine(player, v1, v2, 0.25f);
     }
-    /*
-        blockFace.getDirection() mapping to blockFace.name()
-            SOUTH   -> ( 0.0,  0.0,  1.0 )
-            NORTH   -> ( 0.0,  0.0, -1.0 )
-            EAST    -> ( 1.0,  0.0,  0.0 )
-            WEST    -> (-1.0,  0.0,  0.0 )
-            UP      -> ( 0.0,  1.0,  0.0 )
-            DOWN    -> ( 0.0, -1.0,  0.0 )
-     */
+
+    // Unused anywhere in codebase
     public static void drawCube(Player player, Block block) {
         //FULL FACE 1
         drawLine(player, block.getLocation().clone().add(0, 0, 0).toVector(), block.getLocation().clone().add(1, 0, 0).toVector()); //bottom
