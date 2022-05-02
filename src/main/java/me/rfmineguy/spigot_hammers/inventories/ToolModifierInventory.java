@@ -3,6 +3,7 @@ package me.rfmineguy.spigot_hammers.inventories;
 import me.rfmineguy.spigot_hammers.SpigotTools;
 import me.rfmineguy.spigot_hammers.item.ItemManager;
 import org.bukkit.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -151,6 +152,11 @@ public abstract class ToolModifierInventory {
         public Inventory getInventory() {
             return inventory;
         }
+
+        //used for making sure the tool in question isn't moved in the player's inventory
+        public ItemStack getToolItemStack() {
+            return itemStack;
+        }
     }
 
     public static class InventoryListener implements Listener {
@@ -222,7 +228,7 @@ public abstract class ToolModifierInventory {
             if (event.getView().getTopInventory().getHolder() instanceof CustomInventory) {
                 Player player = (Player) event.getPlayer();
                 CustomInventory inventory = (CustomInventory) event.getView().getTopInventory().getHolder();
-                int efficiencyLevel = 0;
+                int speedLevel = 0;
                 int fortuneLevel = 0;
                 int silkTouchLevel = 0;
                 for (int i = 0; i < 9; i ++) {
@@ -231,7 +237,7 @@ public abstract class ToolModifierInventory {
                     int upgradeLevel = dataContainer.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE, (byte)-1);
                     SpigotTools.LOGGER.info("" + upgradeLevel);
                     switch (upgradeType) {
-                        case "speed": efficiencyLevel = upgradeLevel;
+                        case "speed": speedLevel = upgradeLevel;
                         break;
                         case "fortune": fortuneLevel = upgradeLevel;
                         break;
@@ -243,11 +249,54 @@ public abstract class ToolModifierInventory {
                 ItemStack itemInHand = player.getInventory().getItemInMainHand();
                 ItemMeta meta = itemInHand.getItemMeta();
                 PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-                dataContainer.set(ItemManager.speedUpgradeLvl, PersistentDataType.BYTE, (byte) efficiencyLevel);
+                dataContainer.set(ItemManager.speedUpgradeLvl, PersistentDataType.BYTE, (byte) speedLevel);
                 dataContainer.set(ItemManager.fortuneUpgradeLvl, PersistentDataType.BYTE, (byte) fortuneLevel);
                 dataContainer.set(ItemManager.silkTouchUpgradeLvl, PersistentDataType.BYTE, (byte) silkTouchLevel);
                 itemInHand.setItemMeta(meta);
                 ItemManager.updateItemStackLore(itemInHand);
+
+                enchantItemStack(itemInHand, speedLevel, fortuneLevel, silkTouchLevel);
+            }
+        }
+
+        /*
+            speedLevel -> efficiencyEnchantLevel
+            [0, 1, 2, 3] -> [0, 1, 2, 4]
+
+            fortuneLevel -> fortuneEnchantLevel
+            [0, 1, 2] -> [0, 1, 3]
+
+            silkLevel -> silkEnchantLevel
+            [0, 1] -> [0, 1]
+         */
+        private void enchantItemStack(ItemStack itemStack, int speedLevel, int fortuneLevel, int silkLevel) {
+            itemStack.removeEnchantment(Enchantment.DIG_SPEED);
+            itemStack.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+            itemStack.removeEnchantment(Enchantment.SILK_TOUCH);
+            int efficiencyEnchantLevel = 0;
+            int fortuneEnchantLevel = 0;
+            int silkEnchantLevel = 0;
+            switch (speedLevel) {
+                case 0:break;
+                case 1:efficiencyEnchantLevel = 1; break;
+                case 2:efficiencyEnchantLevel = 2; break;
+                case 3:efficiencyEnchantLevel = 4; break;
+            }
+            switch (fortuneLevel) {
+                case 0:break;
+                case 1:fortuneEnchantLevel = 1; break;
+                case 2:fortuneEnchantLevel = 3; break;
+            }
+            switch (silkLevel) {
+                case 0: break;
+                case 1:silkEnchantLevel = 1; break;
+            }
+            if (efficiencyEnchantLevel != 0)
+                itemStack.addEnchantment(Enchantment.DIG_SPEED, efficiencyEnchantLevel);
+            if (fortuneEnchantLevel != 0)
+                itemStack.addEnchantment(Enchantment.LOOT_BONUS_BLOCKS, fortuneEnchantLevel);
+            if (silkEnchantLevel != 0) {
+                itemStack.addEnchantment(Enchantment.SILK_TOUCH, silkEnchantLevel);
             }
         }
     }
