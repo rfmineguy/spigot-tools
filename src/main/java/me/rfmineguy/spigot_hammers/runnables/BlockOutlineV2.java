@@ -28,7 +28,7 @@ public class BlockOutlineV2 extends BukkitRunnable {
             }
             ItemStack itemStack = p.getInventory().getItemInMainHand();
 
-            //otherwise do nothing
+            //otherwise do absolutely nothing and move on to the next player
             byte playerEffectStatus = p.getPersistentDataContainer().getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "effect"), PersistentDataType.BYTE, (byte) 0);
             boolean isHoldingItem = itemStack.getType() != Material.AIR;
             boolean isHammer = ItemManager.isHammer(itemStack);

@@ -1,9 +1,7 @@
 package me.rfmineguy.spigot_hammers.item;
 
 import me.rfmineguy.spigot_hammers.SpigotTools;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
@@ -165,6 +163,7 @@ public class ItemManager {
             }
             break;
         }
+        data.set(new NamespacedKey(SpigotTools.getPlugin(), "isBroken"), PersistentDataType.BYTE, (byte)0);
         itemStack.setItemMeta(meta);
         updateItemStackLore(itemStack);
 
@@ -226,6 +225,7 @@ public class ItemManager {
         byte speedLvl = data.getOrDefault(speedUpgradeLvl, PersistentDataType.BYTE, (byte)0);
         byte fortuneLvl = data.getOrDefault(fortuneUpgradeLvl, PersistentDataType.BYTE, (byte)0);
         byte silkTouchLvl = data.getOrDefault(silkTouchUpgradeLvl, PersistentDataType.BYTE, (byte)0);
+        byte isBroken = data.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "isBroken"), PersistentDataType.BYTE, (byte)0);
         List<String> lore = new ArrayList<>();
         lore.add("Mines in a 3x3 area");
         lore.add("Shift+RightClick for modifiers");
@@ -234,6 +234,9 @@ public class ItemManager {
         lore.add(" - Efficiency Level   " + speedLvl);
         lore.add(" - Fortune Level      " + fortuneLvl);
         lore.add(" - Silk Touch Level   " + silkTouchLvl);
+        if (isBroken == 1) {
+            lore.add(ChatColor.ITALIC + "" + ChatColor.RED + "BROKEN");
+        }
         meta.setLore(lore);
         itemStack.setItemMeta(meta);
     }
@@ -241,6 +244,8 @@ public class ItemManager {
 
     //LOGIC UTILITY FUNCTIONS
     public static boolean isHammer(ItemStack itemStack) {
+        if (itemStack == null)
+            return false;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null)
             return false;
@@ -248,6 +253,8 @@ public class ItemManager {
         return container.has(new NamespacedKey(SpigotTools.getPlugin(), "hammer"), PersistentDataType.STRING);
     }
     public static boolean isExcavator(ItemStack itemStack) {
+        if (itemStack == null)
+            return false;
         ItemMeta meta = itemStack.getItemMeta();
         if (meta == null)
             return false;
@@ -263,5 +270,14 @@ public class ItemManager {
         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
         return dataContainer.has(new NamespacedKey(SpigotTools.getPlugin(), "upgradeType"), PersistentDataType.STRING) &&
                 dataContainer.has(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE);
+    }
+    public static boolean isToolBroken(ItemStack itemStack) {
+        if (itemStack == null)
+            return false;
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta == null)
+            return false;
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        return container.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "isBroken"), PersistentDataType.BYTE, (byte)0) == 1;
     }
 }
