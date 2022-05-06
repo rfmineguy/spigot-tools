@@ -3,6 +3,7 @@ package me.rfmineguy.spigot_hammers;
 import me.rfmineguy.spigot_hammers.commands.PluginCommands;
 import me.rfmineguy.spigot_hammers.event_listeners.*;
 import me.rfmineguy.spigot_hammers.inventories.ToolModifierInventory;
+import me.rfmineguy.spigot_hammers.inventories.ToolModifierInventoryV2;
 import me.rfmineguy.spigot_hammers.item.ItemManager;
 import me.rfmineguy.spigot_hammers.runnables.BlockOutlineV2;
 import org.bukkit.Bukkit;
@@ -32,7 +33,8 @@ public final class SpigotTools extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new ItemDamageListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
-        getServer().getPluginManager().registerEvents(new ToolModifierInventory.InventoryListener(), this);
+        //getServer().getPluginManager().registerEvents(new ToolModifierInventory.InventoryListener(), this);
+        getServer().getPluginManager().registerEvents(new ToolModifierInventoryV2.InvListener(), this);
         getServer().getPluginManager().registerEvents(new ItemCraftEvent(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);

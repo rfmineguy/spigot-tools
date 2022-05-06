@@ -271,6 +271,19 @@ public class ItemManager {
         return dataContainer.has(new NamespacedKey(SpigotTools.getPlugin(), "upgradeType"), PersistentDataType.STRING) &&
                 dataContainer.has(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE);
     }
+    public static boolean isUpgradeEqual(ItemStack itemStack, ItemStack itemStack2) {
+        if (!isUpgrade(itemStack) || !isUpgrade(itemStack2))
+            return false;
+        PersistentDataContainer item1 = itemStack.getItemMeta().getPersistentDataContainer();
+        PersistentDataContainer item2 = itemStack2.getItemMeta().getPersistentDataContainer();
+        String item1Type = item1.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeType"), PersistentDataType.STRING, "");
+        String item2Type = item2.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeType"), PersistentDataType.STRING, "");
+        byte item1Level = item1.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE, (byte)-1);
+        byte item2Level = item2.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE, (byte)-1);
+        if (item1Type.equals("") || item2Type.equals("") || item1Level == (byte)-1 || item2Level == (byte)-1)
+            return false;
+        return item1Type.equals(item2Type) && item1Level == item2Level;
+    }
     public static boolean isToolBroken(ItemStack itemStack) {
         if (itemStack == null)
             return false;

@@ -216,7 +216,7 @@ public abstract class ToolModifierInventory {
                     SpigotTools.LOGGER.info("Clicked on upgrade item in modifier inventory");
                 }
                 PersistentDataContainer dataContainer = upgradeItemStack.getItemMeta().getPersistentDataContainer();
-                if (dataContainer.getOrDefault(ToolModifierInventory.permanentItemKey, PersistentDataType.BYTE, (byte)0) == 1) {
+                if (dataContainer.getOrDefault(ToolModifierInventory.permanentItemKey, PersistentDataType.BYTE, (byte) 0) == 1) {
                     event.setCancelled(true);
                 }
             }
@@ -270,9 +270,12 @@ public abstract class ToolModifierInventory {
             [0, 1] -> [0, 1]
          */
         private void enchantItemStack(ItemStack itemStack, int speedLevel, int fortuneLevel, int silkLevel) {
+            //reset the tool's enchantments
             itemStack.removeEnchantment(Enchantment.DIG_SPEED);
             itemStack.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
             itemStack.removeEnchantment(Enchantment.SILK_TOUCH);
+
+            //calculate the level of the enchantments to apply
             int efficiencyEnchantLevel = 0;
             int fortuneEnchantLevel = 0;
             int silkEnchantLevel = 0;
@@ -291,6 +294,8 @@ public abstract class ToolModifierInventory {
                 case 0: break;
                 case 1:silkEnchantLevel = 1; break;
             }
+
+            //apply the enchantments to the item
             if (efficiencyEnchantLevel != 0)
                 itemStack.addEnchantment(Enchantment.DIG_SPEED, efficiencyEnchantLevel);
             if (fortuneEnchantLevel != 0)

@@ -2,6 +2,7 @@ package me.rfmineguy.spigot_hammers.event_listeners;
 
 import me.rfmineguy.spigot_hammers.SpigotTools;
 import me.rfmineguy.spigot_hammers.inventories.ToolModifierInventory;
+import me.rfmineguy.spigot_hammers.inventories.ToolModifierInventoryV2;
 import me.rfmineguy.spigot_hammers.item.ItemManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -45,14 +46,15 @@ public class PlayerInteractListener implements Listener {
     }
 
     void handleInventoryOpening(PlayerInteractEvent event) {
-        SpigotTools.LOGGER.info("Interaction");
         if ((event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) || !event.getPlayer().isSneaking()) {
             return;
         }
         ItemStack itemStack = event.getItem();
-        if (itemStack != null && (ItemManager.isHammer(itemStack) || ItemManager.isExcavator(itemStack))) {
-            ToolModifierInventory.CustomInventory inventory = new ToolModifierInventory.CustomInventory(itemStack);
-            event.getPlayer().openInventory(inventory.getInventory());
+        if (ItemManager.isHammer(itemStack) || ItemManager.isExcavator(itemStack)) {
+            //ToolModifierInventory.CustomInventory inventory = new ToolModifierInventory.CustomInventory(itemStack);
+            ToolModifierInventoryV2.Holder invHolder = new ToolModifierInventoryV2.Holder(itemStack);
+
+            event.getPlayer().openInventory(invHolder.getInventory());
             event.setCancelled(true);
         }
     }
