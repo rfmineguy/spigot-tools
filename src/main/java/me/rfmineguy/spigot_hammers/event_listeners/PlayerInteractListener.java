@@ -1,14 +1,13 @@
 package me.rfmineguy.spigot_hammers.event_listeners;
 
 import me.rfmineguy.spigot_hammers.SpigotTools;
-import me.rfmineguy.spigot_hammers.inventories.ToolModifierInventory;
+import me.rfmineguy.spigot_hammers.inventories.MinersBackpackInventory;
 import me.rfmineguy.spigot_hammers.inventories.ToolModifierInventoryV2;
 import me.rfmineguy.spigot_hammers.item.ItemManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -32,7 +31,7 @@ public class PlayerInteractListener implements Listener {
         Block block = event.getClickedBlock();
         SpigotTools.LOGGER.info(block.toString());
 
-        if (ItemManager.isExcavator(player.getInventory().getItemInMainHand())) {
+        if (ItemManager.ToolItem.isExcavator(player.getInventory().getItemInMainHand())) {
             for (int i = -1; i <= 1; i++) {
                 for (int k = -1; k <= 1; k++) {
                     Location origin = block.getLocation().clone();
@@ -50,10 +49,13 @@ public class PlayerInteractListener implements Listener {
             return;
         }
         ItemStack itemStack = event.getItem();
-        if (ItemManager.isHammer(itemStack) || ItemManager.isExcavator(itemStack)) {
-            //ToolModifierInventory.CustomInventory inventory = new ToolModifierInventory.CustomInventory(itemStack);
+        if (ItemManager.ToolItem.isHammer(itemStack) || ItemManager.ToolItem.isExcavator(itemStack)) {
             ToolModifierInventoryV2.Holder invHolder = new ToolModifierInventoryV2.Holder(itemStack);
-
+            event.getPlayer().openInventory(invHolder.getInventory());
+            event.setCancelled(true);
+        }
+        if (ItemManager.isBackpack(itemStack)) {
+            MinersBackpackInventory.Holder invHolder = new MinersBackpackInventory.Holder(itemStack);
             event.getPlayer().openInventory(invHolder.getInventory());
             event.setCancelled(true);
         }

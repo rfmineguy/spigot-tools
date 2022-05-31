@@ -10,6 +10,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
@@ -31,6 +34,10 @@ public abstract class PluginCommands {
                 }
                 case "give": {
                     handleGiveCommand(player, args);
+                    break;
+                }
+                case "repair": {
+                    handleRepairCommand(player, args);
                     break;
                 }
             }
@@ -73,6 +80,26 @@ public abstract class PluginCommands {
                     handleUpgradeGive(player, args);
                     break;
                 }
+                case "backpack": {
+                    handleBackpackGive(player, args);
+                    break;
+                }
+            }
+        }
+
+        void handleRepairCommand(Player player, String[] args) {
+            ItemStack stack = player.getInventory().getItemInMainHand();
+            ItemMeta meta = stack.getItemMeta();
+            PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+            if (ItemManager.ToolItem.isTool(stack)) {//ItemManager.isHammer(stack) || ItemManager.isExcavator(stack)) {
+                dataContainer.set(new NamespacedKey(SpigotTools.getPlugin(), "isBroken"), PersistentDataType.BYTE, (byte)0);
+                stack.setItemMeta(meta);
+
+                Damageable damageable = (Damageable) meta;
+                damageable.setDamage(0);
+                stack.setItemMeta(damageable);
+                ItemManager.ToolItem.updateLore(stack);
+                player.sendMessage("Repaired tool");
             }
         }
 
@@ -123,8 +150,12 @@ public abstract class PluginCommands {
                     break;
                 default:
             }
-            ItemManager.makeUpgradeItemUnique(itemStack);
+            ItemManager.UpgradeItem.makeUnique(itemStack);
             player.getInventory().addItem(itemStack);
+        }
+
+        void handleBackpackGive(Player player, String[] args) {
+            player.getInventory().addItem(ItemManager.minersBackpack);
         }
     }
 
@@ -135,6 +166,7 @@ public abstract class PluginCommands {
             if (args.length == 1) {
                 completions.add("effect");
                 completions.add("give");
+                completions.add("repair");
                 return completions;
             }
             else if (args.length == 2) {
@@ -148,6 +180,7 @@ public abstract class PluginCommands {
                     completions.add("hammer");
                     completions.add("excavator");
                     completions.add("upgrade");
+                    completions.add("backpack");
                     return completions;
                 }
             }

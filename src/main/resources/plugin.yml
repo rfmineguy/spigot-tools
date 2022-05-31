@@ -2,8 +2,7 @@ name: SpigotTools
 version: '${project.version}'
 main: me.rfmineguy.spigot_hammers.SpigotTools
 api-version: 1.18
-description: A plugin implementing a mechanic similar to TConstruct's hammers and excavators
+description: A plugin implementing new mining mechanics
 commands:
   spigot-tools:
     description: Everything spigot tools related is done through here
-depend: []

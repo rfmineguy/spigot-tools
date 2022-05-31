@@ -31,8 +31,8 @@ public class BlockOutlineV2 extends BukkitRunnable {
             //otherwise do absolutely nothing and move on to the next player
             byte playerEffectStatus = p.getPersistentDataContainer().getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "effect"), PersistentDataType.BYTE, (byte) 0);
             boolean isHoldingItem = itemStack.getType() != Material.AIR;
-            boolean isHammer = ItemManager.isHammer(itemStack);
-            boolean isExcavator = ItemManager.isExcavator(itemStack);
+            boolean isHammer = ItemManager.ToolItem.isHammer(itemStack);
+            boolean isExcavator = ItemManager.ToolItem.isExcavator(itemStack);
             if (playerEffectStatus == (byte)1 && (isHoldingItem && (isExcavator || isHammer))) {
                 Block block = HelperFunctions.getTargetBlock(p);
                 BlockFace face = HelperFunctions.getTargetBlockFace(p);

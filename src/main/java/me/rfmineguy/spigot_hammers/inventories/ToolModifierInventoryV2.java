@@ -19,16 +19,17 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
-public class ToolModifierInventoryV2 {
+public abstract class ToolModifierInventoryV2 {
 
     private static class ToolModificationUtil {
+        private enum FuelType {
+            EFFICIENCY, FORTUNE, SILK_TOUCH
+        }
         public static NamespacedKey permanent = new NamespacedKey(SpigotTools.getPlugin(), "permanent");
         public static final ItemStack BLANK_ITEM = createBlank();
 
         public static ItemStack[] slotToUpgradeMapping;// = new ItemStack[];
         public static ItemStack[] slotToHintMapping;
-        public static final HashMap<ItemStack, Integer> upgradeToSlotMap = new HashMap<>();     // maps upgrade itemstacks to certain slots
-        public static final HashMap<ItemStack, Integer> hintToSlotMap = new HashMap<>();        // maps hint itemstacks to certain slots
 
         // executes when the class is loaded
         static {
@@ -43,34 +44,16 @@ public class ToolModifierInventoryV2 {
             slotToUpgradeMapping[5] = ItemManager.fortuneUpgradeItemLvl2;
             slotToUpgradeMapping[7] = ItemManager.silkTouchUpgradeItem;
 
-            SpigotTools.LOGGER.info("Real Speed Upgrade : " + ItemManager.speedUpgradeItemLvl1);
-            SpigotTools.LOGGER.info("Speed Upgrade Mapping : " + slotToUpgradeMapping[0]);
-
-
             slotToHintMapping = new ItemStack[18];
             for (int i = 0; i < 18; i++) {
                 slotToHintMapping[i] = BLANK_ITEM;
             }
             slotToHintMapping[0] = createHint("Speed Upgrade", Collections.singletonList("Speed Upgrade I"));
             slotToHintMapping[1] = createHint("Speed Upgrade", Collections.singletonList("Speed Upgrade II"));
-            slotToHintMapping[2] = createHint("Speed Upgrade", Collections.singletonList("Speed Upgrade II"));
+            slotToHintMapping[2] = createHint("Speed Upgrade", Collections.singletonList("Speed Upgrade III"));
             slotToHintMapping[4] = createHint("Fortune Upgrade", Collections.singletonList("Fortune Upgrade I"));
             slotToHintMapping[5] = createHint("Fortune Upgrade", Collections.singletonList("Fortune Upgrade II"));
             slotToHintMapping[7] = createHint("Silk Touch Upgrade", Collections.singletonList("Silk Touch Upgrade I"));
-
-            upgradeToSlotMap.put(ItemManager.speedUpgradeItemLvl1, 0);
-            upgradeToSlotMap.put(ItemManager.speedUpgradeItemLvl2, 1);
-            upgradeToSlotMap.put(ItemManager.speedUpgradeItemLvl3, 2);
-            upgradeToSlotMap.put(ItemManager.fortuneUpgradeItemLvl1, 4);
-            upgradeToSlotMap.put(ItemManager.fortuneUpgradeItemLvl2, 5);
-            upgradeToSlotMap.put(ItemManager.silkTouchUpgradeItem, 7);
-
-            hintToSlotMap.put(createHint("Speed Upgrade", Collections.singletonList("Speed Upgrade I")), 0);
-            hintToSlotMap.put(createHint("Speed Upgrade", Collections.singletonList("Speed Upgrade II")), 1);
-            hintToSlotMap.put(createHint("Speed Upgrade", Collections.singletonList("Speed Upgrade III")), 2);
-            hintToSlotMap.put(createHint("Fortune Upgrade", Collections.singletonList("Fortune Upgrade I")), 4);
-            hintToSlotMap.put(createHint("Fortune Upgrade", Collections.singletonList("Fortune Upgrade II")), 5);
-            hintToSlotMap.put(createHint("Silk Touch Upgrade", Collections.singletonList("Silk Touch Upgrade I")), 7);
         }
 
         /**
@@ -116,7 +99,7 @@ public class ToolModifierInventoryV2 {
          * @see ToolModifierInventoryV2.Holder
          */
         public static boolean canUpgradeBeInserted(ItemStack tool, ItemStack upgradeStack) {
-            if (tool == null || upgradeStack == null)
+            if (tool == null || !ItemManager.UpgradeItem.isUpgrade(upgradeStack))
                 return false;
             ItemMeta upgradeStackMeta = upgradeStack.getItemMeta();
             ItemMeta toolStackMeta = tool.getItemMeta();
@@ -141,6 +124,40 @@ public class ToolModifierInventoryV2 {
             return upgradeItemLevel == toolCurrentUpgradeLevel + 1;
         }
 
+        public static boolean canFuelBeInserted(ItemStack tool, ItemStack item) {
+            if (tool == null || item == null || !isFuel(item))
+                return false;
+            ItemMeta fuelStackMeta = item.getItemMeta();
+            ItemMeta toolStackMeta = tool.getItemMeta();
+            assert fuelStackMeta != null && toolStackMeta != null;
+            PersistentDataContainer fuelContainer = fuelStackMeta.getPersistentDataContainer();
+            PersistentDataContainer toolContainer = toolStackMeta.getPersistentDataContainer();
+
+            switch (item.getType()) {
+                case REDSTONE: {
+                    short fuelCount = toolContainer.getOrDefault(ItemManager.ToolItem.efficiencyFuelKey, PersistentDataType.SHORT, (short)0);
+                    short maxFuelCount = toolContainer.getOrDefault(ItemManager.ToolItem.maxEfficiencyFuelKey, PersistentDataType.SHORT, (short)0);
+                    if (fuelCount + 1 < maxFuelCount)
+                        return true;
+                    break;
+                }
+                case LAPIS_LAZULI: {
+                    short fuelCount = toolContainer.getOrDefault(ItemManager.ToolItem.fortuneFuelKey, PersistentDataType.SHORT, (short)0);
+                    short maxFuelCount = toolContainer.getOrDefault(ItemManager.ToolItem.maxFortuneFuelKey, PersistentDataType.SHORT, (short)0);
+                    if (fuelCount + 1 < maxFuelCount)
+                        return true;
+                    break;
+                }
+                case SLIME_BALL: {
+                    short fuelCount = toolContainer.getOrDefault(ItemManager.ToolItem.silkTouchFuelKey, PersistentDataType.SHORT, (short)0);
+                    short maxFuelCount = toolContainer.getOrDefault(ItemManager.ToolItem.maxSilkTouchFuelKey, PersistentDataType.SHORT, (short)0);
+                    if (fuelCount + 1 < maxFuelCount)
+                        return true;
+                    break;
+                }
+            }
+            return false;
+        }
         public static ItemStack hintForSlot(int slot) {
             return slotToHintMapping[slot];
         }
@@ -148,7 +165,7 @@ public class ToolModifierInventoryV2 {
         // isSimilar wont work because we add random nbt to each one. we need an ItemManager method
         public static int slotForUpgradeItem(ItemStack itemStack) {
             for (int i = 0; i < 18; i++) {
-                if (ItemManager.isUpgradeEqual(slotToUpgradeMapping[i], itemStack)) {
+                if (ItemManager.UpgradeItem.isEqual(slotToUpgradeMapping[i], itemStack)) {
                     return i;
                 }
             }
@@ -164,7 +181,6 @@ public class ToolModifierInventoryV2 {
             blank.setItemMeta(meta);
             return blank;
         }
-
         private static ItemStack createHint(String name, List<String> lore) {
             ItemStack hint = new ItemStack(Material.WHITE_STAINED_GLASS_PANE);
             ItemMeta meta = hint.getItemMeta();
@@ -175,6 +191,42 @@ public class ToolModifierInventoryV2 {
             dataContainer.set(permanent, PersistentDataType.BYTE, (byte)1);
             hint.setItemMeta(meta);
             return hint;
+        }
+        private static ItemStack createFuelIndicatorItem(ItemStack tool, String name, Material material, FuelType fuelType) {
+            ItemStack itemStack = new ItemStack(material);
+            ItemMeta meta = itemStack.getItemMeta();
+            meta.setDisplayName(name);
+
+            PersistentDataContainer container = tool.getItemMeta().getPersistentDataContainer();
+
+            List<String> lore = new ArrayList<>();
+            switch (fuelType) {
+                case EFFICIENCY: {
+                    int fuelCount = container.getOrDefault(ItemManager.ToolItem.efficiencyFuelKey, PersistentDataType.SHORT, (short)0);
+                    int fuelMax = container.getOrDefault(ItemManager.ToolItem.maxEfficiencyFuelKey, PersistentDataType.SHORT, (short)255);
+                    lore.add("" + fuelCount + "/" + fuelMax);
+                    break;
+                }
+                case FORTUNE: {
+                    int fuelCount = container.getOrDefault(ItemManager.ToolItem.fortuneFuelKey, PersistentDataType.SHORT, (short)0);
+                    int fuelMax = container.getOrDefault(ItemManager.ToolItem.maxFortuneFuelKey, PersistentDataType.SHORT, (short)255);
+                    lore.add("" + fuelCount + "/" + fuelMax);
+                    break;
+                }
+                case SILK_TOUCH: {
+                    int fuelCount = container.getOrDefault(ItemManager.ToolItem.silkTouchFuelKey, PersistentDataType.SHORT, (short)0);
+                    int fuelMax = container.getOrDefault(ItemManager.ToolItem.maxSilkTouchFuelKey, PersistentDataType.SHORT, (short)255);
+                    lore.add("" + fuelCount + "/" + fuelMax);
+                    break;
+                }
+            }
+            meta.setLore(lore);
+            itemStack.setItemMeta(meta);
+            return itemStack;
+        }
+        private static boolean isFuel(ItemStack itemStack) {
+            Material type = itemStack.getType();
+            return type == Material.REDSTONE || type == Material.LAPIS_LAZULI || type == Material.SLIME_BALL;
         }
     }
 
@@ -199,6 +251,11 @@ public class ToolModifierInventoryV2 {
                     inventory.setItem(i, ToolModificationUtil.slotToHintMapping[i]);
             }
 
+            inventory.setItem(9, ToolModificationUtil.createFuelIndicatorItem(itemStack, "Efficiency Fuel", Material.REDSTONE, ToolModificationUtil.FuelType.EFFICIENCY));
+            inventory.setItem(13, ToolModificationUtil.createFuelIndicatorItem(itemStack, "Fortune Fuel", Material.LAPIS_LAZULI, ToolModificationUtil.FuelType.FORTUNE));
+            inventory.setItem(16, ToolModificationUtil.createFuelIndicatorItem(itemStack, "Silk Touch Fuel", Material.SLIME_BALL, ToolModificationUtil.FuelType.SILK_TOUCH));
+
+            //fill in the upgrades that are currently installed on the tool
             PersistentDataContainer container = itemStack.getItemMeta().getPersistentDataContainer();
             byte speedLevel = container.getOrDefault(ItemManager.speedUpgradeLvl, PersistentDataType.BYTE, (byte)0);
             byte fortuneLevel = container.getOrDefault(ItemManager.fortuneUpgradeLvl, PersistentDataType.BYTE, (byte)0);
@@ -207,15 +264,18 @@ public class ToolModifierInventoryV2 {
                 case 3: inventory.setItem(2, ItemManager.speedUpgradeItemLvl3);
                 case 2: inventory.setItem(1, ItemManager.speedUpgradeItemLvl2);
                 case 1: inventory.setItem(0, ItemManager.speedUpgradeItemLvl1);
+                case 0:
                 break;
             }
             switch (fortuneLevel) {
                 case 2: inventory.setItem(5, ItemManager.fortuneUpgradeItemLvl2);
                 case 1: inventory.setItem(4, ItemManager.fortuneUpgradeItemLvl1);
+                case 0:
                 break;
             }
             switch (silkLevel) {
                 case 1: inventory.setItem(7, ItemManager.silkTouchUpgradeItem);
+                case 0:
                 break;
             }
         }
@@ -268,27 +328,16 @@ public class ToolModifierInventoryV2 {
             }
             if (clickedHolder instanceof Player) {
                 // move items OUT of the player inventory and IN to the tool inventory
-                if (!ToolModificationUtil.canUpgradeBeInserted(player.getInventory().getItemInMainHand(), event.getCurrentItem())) {
-                    SpigotTools.LOGGER.info("That item cannot be inserted into the modification table");
-                    SpigotTools.LOGGER.info("ItemInUse : " + player.getItemInUse());
-                    SpigotTools.LOGGER.info("CurrentItem : " + event.getCurrentItem());
-                    event.setCancelled(true);
-                    return;
+                if (ToolModificationUtil.canUpgradeBeInserted(player.getInventory().getItemInMainHand(), event.getCurrentItem())) {
+
+                    insertUpgrade(toolModifierInventory, playerInventory, event);
+                }
+                else if (ToolModificationUtil.canFuelBeInserted(player.getInventory().getItemInMainHand(), event.getCurrentItem())) {
+                    SpigotTools.LOGGER.info("Fuel can be inserted");
+                    insertFuel(toolModifierInventory, playerInventory, event);
                 }
                 else {
-                    SpigotTools.LOGGER.info("Item can be inserted into the modification table");
-                    int slotForUpgradeItem = ToolModificationUtil.slotForUpgradeItem(event.getCurrentItem());
-                    SpigotTools.LOGGER.info("Putting it into slot #" + slotForUpgradeItem);
-                    toolModifierInventory.getInventory().setItem(slotForUpgradeItem, event.getCurrentItem());
-                    ItemStack playerSlotStack = playerInventory.getInventory().getItem(event.getSlot());
-                    playerInventory.getInventory().getItem(event.getSlot()).setAmount(playerSlotStack.getAmount() - 1);
-
-                    //should efficiently apply the upgrades because this will happen everytime an upgrade is inserted
-                    PersistentDataContainer container = clickedItem.getItemMeta().getPersistentDataContainer();
-                    String upgradeType = container.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeType"), PersistentDataType.STRING, "N/A");
-                    byte upgradeLevel = container.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE, (byte)0);
-                    applyChange(toolInMainHand, upgradeType, upgradeLevel);
-                    toolModifierInventory.initialize(toolInMainHand);
+                    SpigotTools.LOGGER.info("That item can't be inserted into the modification table");
                     event.setCancelled(true);
                 }
             }
@@ -296,11 +345,32 @@ public class ToolModifierInventoryV2 {
             player.updateInventory();
         }
 
+        private void insertUpgrade(ToolModifierInventoryV2.Holder modificationInventory, InventoryHolder playerInventory, InventoryClickEvent event) {
+            ItemStack currentItem = event.getCurrentItem();
+            ItemStack itemInMainHand = event.getWhoClicked().getInventory().getItemInMainHand();
+            assert currentItem != null;
+            int slotForUpgrade = ToolModificationUtil.slotForUpgradeItem(currentItem);
+            modificationInventory.getInventory().setItem(slotForUpgrade, currentItem);
+            ItemStack playerSlotStack = playerInventory.getInventory().getItem(event.getSlot());
+            playerInventory.getInventory().getItem(event.getSlot()).setAmount(playerSlotStack.getAmount() - 1);
+
+            PersistentDataContainer container = currentItem.getItemMeta().getPersistentDataContainer();
+            String upgradeType = container.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeType"), PersistentDataType.STRING, "N/A");
+            byte upgradeLevel = container.getOrDefault(new NamespacedKey(SpigotTools.getPlugin(), "upgradeLevel"), PersistentDataType.BYTE, (byte)0);
+            applyChange(itemInMainHand, upgradeType, upgradeLevel);
+            modificationInventory.initialize(itemInMainHand);
+            event.setCancelled(true);
+        }
+        private void insertFuel(ToolModifierInventoryV2.Holder modificationInventory, InventoryHolder playerInventory, InventoryClickEvent event) {
+            ItemStack currentItem = event.getCurrentItem();
+            ItemStack itemInMainHand = event.getWhoClicked().getInventory().getItemInMainHand();
+            assert currentItem != null;
+            event.setCancelled(true);
+        }
         private void applyChange(ItemStack tool, String upgradeType, int upgradeLevel) {
             ItemMeta meta = tool.getItemMeta();
             PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
-            //SpigotTools.LOGGER.info("Changing '" + upgradeType + "' to " + upgradeLevel);
             switch (upgradeType) {
                 case "speed":
                     dataContainer.set(ItemManager.speedUpgradeLvl, PersistentDataType.BYTE, (byte)upgradeLevel);
@@ -313,7 +383,7 @@ public class ToolModifierInventoryV2 {
                     break;
             }
             tool.setItemMeta(meta);
-            ItemManager.updateItemStackLore(tool);
+            ItemManager.ToolItem.updateLore(tool);
             applyEnchants(tool);
         }
 

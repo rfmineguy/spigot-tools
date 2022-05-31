@@ -19,7 +19,7 @@ public class ItemDamageListener implements Listener {
     public void itemDamage(PlayerItemDamageEvent event) {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
-        if (ItemManager.isExcavator(item) || ItemManager.isHammer(item)) {
+        if (ItemManager.ToolItem.isExcavator(item) || ItemManager.ToolItem.isHammer(item)) {
             ItemMeta meta = item.getItemMeta();
             PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
             Damageable damageable = (Damageable) item.getItemMeta();
@@ -29,7 +29,7 @@ public class ItemDamageListener implements Listener {
                 if (dataContainer.get(new NamespacedKey(SpigotTools.getPlugin(), "isBroken"), PersistentDataType.BYTE) == 0) {
                     dataContainer.set(new NamespacedKey(SpigotTools.getPlugin(), "isBroken"), PersistentDataType.BYTE, (byte)1);
                     item.setItemMeta(meta);
-                    ItemManager.updateItemStackLore(item);
+                    ItemManager.ToolItem.updateLore(item);
                     player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
                 }
                 event.setCancelled(true);

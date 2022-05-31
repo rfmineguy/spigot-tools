@@ -6,7 +6,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,17 +24,18 @@ public class BlockBreakListener implements Listener {
         Player player = event.getPlayer();
         BlockFace blockFace = HelperFunctions.getTargetBlockFace(player);
         Block block = event.getBlock();
+
         ItemStack currentItem = player.getInventory().getItem(EquipmentSlot.HAND);
-        if (ItemManager.isToolBroken(currentItem)) {
+        if (ItemManager.ToolItem.isBroken(currentItem)) {
             event.setCancelled(true);
             return;
         }
 
         if (blockFace != null && !player.isSneaking() && !block.isPassable()) {
-            if (ItemManager.isHammer(currentItem) && !currentlyBreaking) {
+            if (ItemManager.ToolItem.isHammer(currentItem) && !currentlyBreaking) {
                 break3x3(player, blockFace, currentItem, block.getX(), block.getY(), block.getZ(), false);
             }
-            else if (ItemManager.isExcavator(currentItem) && !currentlyBreaking) {
+            else if (ItemManager.ToolItem.isExcavator(currentItem) && !currentlyBreaking) {
                 break3x3(player, blockFace, currentItem, block.getX(), block.getY(), block.getZ(), true);
             }
         }

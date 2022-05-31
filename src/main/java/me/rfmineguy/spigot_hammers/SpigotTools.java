@@ -2,11 +2,10 @@ package me.rfmineguy.spigot_hammers;
 
 import me.rfmineguy.spigot_hammers.commands.PluginCommands;
 import me.rfmineguy.spigot_hammers.event_listeners.*;
-import me.rfmineguy.spigot_hammers.inventories.ToolModifierInventory;
+import me.rfmineguy.spigot_hammers.inventories.MinersBackpackInventory;
 import me.rfmineguy.spigot_hammers.inventories.ToolModifierInventoryV2;
 import me.rfmineguy.spigot_hammers.item.ItemManager;
 import me.rfmineguy.spigot_hammers.runnables.BlockOutlineV2;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -15,6 +14,10 @@ import java.util.logging.Logger;
 
 public final class SpigotTools extends JavaPlugin {
 
+    /*
+            https://github.com/JEFF-Media-GbR/MorePersistentDataTypes
+             - this library is usd in this plugin
+     */
     private static SpigotTools plugin;
     public static Logger LOGGER;
     public static Random RANDOM = new Random();
@@ -33,8 +36,11 @@ public final class SpigotTools extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new ItemDamageListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
-        //getServer().getPluginManager().registerEvents(new ToolModifierInventory.InventoryListener(), this);
+
+        // Inventory listeners (manages functions of backpack and upgrade "table")
         getServer().getPluginManager().registerEvents(new ToolModifierInventoryV2.InvListener(), this);
+        getServer().getPluginManager().registerEvents(new MinersBackpackInventory.InvListener(), this);
+
         getServer().getPluginManager().registerEvents(new ItemCraftEvent(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new JoinEvent(), this);
@@ -47,7 +53,7 @@ public final class SpigotTools extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
         task.cancel();
-        LOGGER.info("SpigotTools plugin gracefully disabled");
+        LOGGER.info("SpigotTools plugin gracefully disabled");      //never displays as spigot disables logging when reloading
     }
 
     public static SpigotTools getPlugin() {
